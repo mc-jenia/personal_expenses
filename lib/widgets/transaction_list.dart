@@ -3,62 +3,72 @@ import 'package:intl/intl.dart';
 import 'package:personal_expenses/models/transaction.dart';
 
 class TransactionList extends StatelessWidget {
-  const TransactionList({Key? key, required this.transaction})
+  const TransactionList(
+      {Key? key, required this.transaction, required this.deleteTx})
       : super(key: key);
   final List<Transaction> transaction;
+  final Function deleteTx;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (context, index) {
-        return Card(
-          child: Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (transaction.isEmpty) {
+          return Column(
             children: [
-              Container(
-                margin: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 15,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.purple,
-                    width: 2,
-                  ),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Text(
-                  '\$${transaction[index].amount}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.purple,
-                  ),
-                ),
+              const Text('No Transactions added yet!'),
+              const SizedBox(
+                height: 10,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction[index].title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    DateFormat.yMd().format(transaction[index].date),
-                    style: const TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+              SizedBox(
+                height: constraints.maxHeight * 0.5,
+                child: Image.asset(
+                  'assets/image/waiting.png',
+                  fit: BoxFit.cover,
+                ),
               )
             ],
-          ),
+          );
+        }
+        return ListView.builder(
+          itemBuilder: (context, index) {
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+              elevation: 5,
+              child: ListTile(
+                leading: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: FittedBox(
+                    child: CircleAvatar(
+                      radius: 30,
+                      child: Text('\$${transaction[index].amount}'),
+                    ),
+                  ),
+                ),
+                title: Text(transaction[index].title),
+                subtitle: Text(
+                  DateFormat.yMMMd().format(transaction[index].date),
+                ),
+                trailing: MediaQuery.of(context).size.width > 460
+                    ? ElevatedButton.icon(
+                        onPressed: () => deleteTx(transaction[index].id),
+                        icon: const Icon(Icons.delete),
+                        label: const Text('Delete'),
+                      )
+                    : IconButton(
+                        onPressed: () => deleteTx(transaction[index].id),
+                        color: Theme.of(context).errorColor,
+                        icon: const Icon(
+                          Icons.delete,
+                        ),
+                      ),
+              ),
+            );
+          },
+          itemCount: transaction.length,
+          shrinkWrap: true,
         );
       },
-      itemCount: transaction.length,
-      shrinkWrap: true,
     );
   }
 }
